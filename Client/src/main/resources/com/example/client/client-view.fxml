@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox alignment="CENTER" prefHeight="416.0" prefWidth="605.0" spacing="20.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.client.SpeedtestClientController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+    <children>
+        <TitledPane collapsible="false" prefHeight="200.0" prefWidth="200.0" text="connection details">
+            <content>
+                <VBox>
+                    <children>
+                        <HBox alignment="BOTTOM_LEFT" prefWidth="509.0">
+                            <children>
+                                <VBox prefHeight="42.0" prefWidth="164.0">
+                                    <children>
+                                        <Label text="Address">
+                                            <VBox.margin>
+                                                <Insets left="5.0" right="5.0" />
+                                            </VBox.margin>
+                                        </Label>
+                                        <TextField fx:id="ipAddressField" prefHeight="25.0" prefWidth="140.0" text="10.11.11.50">
+                                            <VBox.margin>
+                                                <Insets left="5.0" right="5.0" />
+                                            </VBox.margin>
+                                        </TextField>
+                                    </children>
+                                </VBox>
+                                <VBox layoutX="21.0" layoutY="21.0" prefHeight="42.0" prefWidth="165.0">
+                                    <children>
+                                        <Label text="Listening port">
+                                            <VBox.margin>
+                                                <Insets left="5.0" right="5.0" />
+                                            </VBox.margin>
+                                        </Label>
+                                        <TextField fx:id="portField" text="7777">
+                                            <VBox.margin>
+                                                <Insets left="5.0" right="5.0" />
+                                            </VBox.margin>
+                                        </TextField>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </HBox>
+                        <HBox alignment="CENTER" prefWidth="200.0">
+                            <padding>
+                                <Insets bottom="10.0" top="10.0" />
+                            </padding>
+                        </HBox>
+                        <HBox alignment="CENTER" prefWidth="200.0">
+                            <children>
+                                <Label text="Sending buffer size ">
+                                    <HBox.margin>
+                                        <Insets right="50.0" />
+                                    </HBox.margin>
+                                </Label>
+                                <CheckBox fx:id="nagleCheckBox" mnemonicParsing="false" onAction="#nagleAlgorithmCheckboxHandler" text="Nagle algorithm" />
+                                <Label fx:id="bytesLabel" text="1 bytes" textAlignment="RIGHT">
+                                    <HBox.margin>
+                                        <Insets left="50.0" />
+                                    </HBox.margin>
+                                </Label>
+                            </children>
+                        </HBox>
+                        <Slider fx:id="packetSizeSlider" majorTickUnit="10.0" max="65000.0" min="1.0" minorTickCount="10" value="1.0" />
+                        <HBox alignment="CENTER" prefWidth="200.0">
+                            <padding>
+                                <Insets top="10.0" />
+                            </padding>
+                     <children>
+                        <HBox alignment="CENTER_LEFT">
+                           <children>
+                                      <Label prefHeight="17.0" prefWidth="107.0" text="Server IP address">
+                                          <padding>
+                                              <Insets left="5.0" right="5.0" />
+                                          </padding>
+                                      </Label>
+                              <Label prefHeight="17.0" prefWidth="173.0" text="10.11.11.50:7777" />
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0">
+                           <children>
+                                      <Button fx:id="startStopButton" mnemonicParsing="false" onAction="#startStopHandler" text="Start transmission" textAlignment="RIGHT" />
+                           </children>
+                        </HBox>
+                     </children>
+                        </HBox>
+                    </children>
+                </VBox>
+            </content>
+        </TitledPane>
+        <TitledPane collapsible="false" prefHeight="108.0" prefWidth="565.0" text="Output">
+            <content>
+                <VBox prefWidth="100.0">
+                    <children>
+                        <Label fx:id="tcpLabel" text="TCP Thread: disconnected">
+                            <font>
+                                <Font size="18.0" />
+                            </font>
+                        </Label>
+                        <Label fx:id="udpLabel" text="UDP Thread: Stopped">
+                     <font>
+                        <Font size="18.0" />
+                     </font></Label>
+                    </children>
+                </VBox>
+            </content>
+        </TitledPane>
+    </children>
+</VBox>
