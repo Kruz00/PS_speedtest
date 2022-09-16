@@ -1,16 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<?import javafx.scene.control.Button?>
-<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.example.server.SpeedtestServerController">
+<VBox alignment="CENTER" prefHeight="326.0" prefWidth="566.0" spacing="20.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.server.SpeedtestServerController">
     <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
-
-    <Label fx:id="welcomeText"/>
-    <Button text="Hello!" onAction="#onHelloButtonClick"/>
+    <children>
+        <HBox alignment="BASELINE_CENTER" prefWidth="200.0">
+            <children>
+                <Label text="Listening port" />
+                <TextField fx:id="portField" prefWidth="50.0" text="7777">
+                    <HBox.margin>
+                        <Insets left="10.0" right="10.0" />
+                    </HBox.margin>
+                </TextField>
+                <Button fx:id="startStopButton" mnemonicParsing="false" onAction="#onStartStop" text="Start listening">
+               <HBox.margin>
+                  <Insets left="50.0" />
+               </HBox.margin></Button>
+            </children>
+         <VBox.margin>
+            <Insets />
+         </VBox.margin>
+        </HBox>
+        <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0">
+            <children>
+                <VBox spacing="15.0">
+                    <children>
+                        <Label />
+                        <Label layoutX="10.0" layoutY="10.0" text="Single data size [bytes]" />
+                        <Label layoutX="10.0" layoutY="27.0" text="Total size of transfered data [kbytes]" />
+                        <Label layoutX="10.0" layoutY="44.0" text="Total transmission time [sec]" />
+                        <Label layoutX="10.0" layoutY="61.0" text="Statistics calculation time [msec]" />
+                        <Label fx:id="tsLabel" layoutX="10.0" layoutY="78.0" text="Transmision speed [bytes/sec]" />
+                        <Label layoutX="10.0" layoutY="95.0" text="Lost data [bytes]" />
+                        <Label layoutX="10.0" layoutY="112.0" text="Transmission error [%]" />
+                    </children>
+                </VBox>
+                <VBox alignment="TOP_CENTER" layoutX="10.0" layoutY="10.0" prefHeight="200.0" prefWidth="100.0" spacing="8.0">
+                    <children>
+                        <Label text="TCP">
+                            <font>
+                                <Font size="20.0" />
+                            </font>
+                            <VBox.margin>
+                                <Insets bottom="-10.0" />
+                            </VBox.margin>
+                        </Label>
+                        <TextField fx:id="tcp_sds" editable="false" />
+                        <TextField fx:id="tcp_tsotd" editable="false" />
+                        <TextField fx:id="tcp_ttt" editable="false" />
+                        <TextField fx:id="tcp_sct" editable="false" />
+                        <TextField fx:id="tcp_ts" editable="false" />
+                        <TextField fx:id="tcp_ld" editable="false" />
+                        <TextField fx:id="tcp_te" editable="false" />
+                    </children>
+                </VBox>
+                <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" spacing="8.0">
+                    <children>
+                        <Label text="UDP">
+                            <font>
+                                <Font size="20.0" />
+                            </font>
+                            <VBox.margin>
+                                <Insets bottom="-10.0" />
+                            </VBox.margin>
+                        </Label>
+                        <TextField fx:id="udp_sds" editable="false" />
+                        <TextField fx:id="udp_tsotd" editable="false" />
+                        <TextField fx:id="udp_ttt" editable="false" />
+                        <TextField fx:id="udp_sct" editable="false" />
+                        <TextField fx:id="udp_ts" editable="false" />
+                        <TextField fx:id="udp_ld" editable="false" />
+                        <TextField fx:id="udp_te" editable="false" />
+                    </children>
+                </VBox>
+            </children>
+        </HBox>
+    </children>
 </VBox>

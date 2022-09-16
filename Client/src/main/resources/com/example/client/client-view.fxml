@@ -58,15 +58,19 @@
                                         <Insets right="50.0" />
                                     </HBox.margin>
                                 </Label>
-                                <CheckBox fx:id="nagleCheckBox" mnemonicParsing="false" onAction="#nagleAlgorithmCheckboxHandler" text="Nagle algorithm" />
                                 <Label fx:id="bytesLabel" text="1 bytes" textAlignment="RIGHT">
                                     <HBox.margin>
-                                        <Insets left="50.0" />
+                                        <Insets />
                                     </HBox.margin>
                                 </Label>
                             </children>
                         </HBox>
-                        <Slider fx:id="packetSizeSlider" majorTickUnit="10.0" max="65000.0" min="1.0" minorTickCount="10" value="1.0" />
+                        <Slider fx:id="packetSizeSlider" blockIncrement="100.0" majorTickUnit="10.0" max="65000.0" min="1.0" minorTickCount="10" value="1.0" />
+                  <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                     <children>
+                                <CheckBox fx:id="nagleCheckBox" mnemonicParsing="false" onAction="#onNagleAlgorithmCheckbox" text="Nagle algorithm" />
+                     </children>
+                  </HBox>
                         <HBox alignment="CENTER" prefWidth="200.0">
                             <padding>
                                 <Insets top="10.0" />
@@ -79,12 +83,12 @@
                                               <Insets left="5.0" right="5.0" />
                                           </padding>
                                       </Label>
-                              <Label prefHeight="17.0" prefWidth="173.0" text="10.11.11.50:7777" />
+                              <Label fx:id="serverAddressLabel" prefHeight="17.0" prefWidth="173.0" text="None" />
                            </children>
                         </HBox>
                         <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0">
                            <children>
-                                      <Button fx:id="startStopButton" mnemonicParsing="false" onAction="#startStopHandler" text="Start transmission" textAlignment="RIGHT" />
+                                      <Button fx:id="startStopButton" mnemonicParsing="false" onAction="#onStartStop" text="Start transmission" textAlignment="RIGHT" />
                            </children>
                         </HBox>
                      </children>
