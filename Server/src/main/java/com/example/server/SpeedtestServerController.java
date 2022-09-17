@@ -1,9 +1,15 @@
 package com.example.server;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class SpeedtestServerController {
     @FXML
@@ -34,10 +40,38 @@ public class SpeedtestServerController {
 
     private TCPThread tcpThread;
     private UDPThread udpThread;
+    private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledFuture<?> scheduledUpdating;
 
+    private void updateStats() {
+        if (this.tcpThread != null) {
+            updateTCPstats(
+                    this.tcpThread.getRecvBufferSize(),
+                    this.tcpThread.getRecvDataSize(),
+                    this.tcpThread.getTransmissionTime(),
+                    this.tcpThread.getTransmissionSpeed()
+            );
+        }
+        if (this.udpThread != null) {
+            updateUDPstats(
+                    this.udpThread.getRecvBufferSize(),
+                    this.udpThread.getRecvDataSize(),
+                    this.udpThread.getTransmissionTime(),
+                    this.udpThread.getTransmissionSpeed()
+            );
+        }
+    }
 
     @FXML
     public void initialize() {
+        startUpdatingStats();
+    }
+
+    private void startUpdatingStats() {
+        scheduledUpdating = executorService.scheduleAtFixedRate(
+                () -> Platform.runLater(this::updateStats),
+                50, 50, TimeUnit.MILLISECONDS
+        );
     }
 
     public void onStartStop(ActionEvent actionEvent) {
@@ -62,34 +96,37 @@ public class SpeedtestServerController {
             this.tcpThread.start();
             this.udpThread.start();
 
+            startUpdatingStats();
+
         } else if (this.startStopButton.getText().equalsIgnoreCase("Stop listening")) {
             this.tcpThread.close();
             this.udpThread.close();
             this.startStopButton.setText("Start listening");
             this.portField.setDisable(false);
+            scheduledUpdating.cancel(false);
         }
     }
 
 
-    public void updateTCPstats(long singleDataSize,
-                               double totalSizeOfTransferredData,
-                               double totalTransmissionTime,
-                               double transmissionSpeed
+    private void updateTCPstats(long singleDataSize,
+                                double totalSizeOfTransferredData,
+                                double totalTransmissionTime,
+                                double transmissionSpeed
     ) {
         this.tcp_singleDataSize.setText(String.valueOf(singleDataSize));
         this.tcp_totalSizeOfTransferredData.setText(String.format("%.3f", totalSizeOfTransferredData / 1024));
         this.tcp_totalTransmissionTime.setText(String.format("%.1f", totalTransmissionTime / 1000));
-        this.tcp_transmissionSpeed.setText(String.format("%.4f", transmissionSpeed / 1024));
+        this.tcp_transmissionSpeed.setText(String.format("%.3f", transmissionSpeed / 1024));
     }
 
-    public void updateUDPstats(long singleDataSize,
-                               double totalSizeOfTransferredData,
-                               double totalTransmissionTime,
-                               double transmissionSpeed
+    private void updateUDPstats(long singleDataSize,
+                                double totalSizeOfTransferredData,
+                                double totalTransmissionTime,
+                                double transmissionSpeed
     ) {
         this.udp_singleDataSize.setText(String.valueOf(singleDataSize));
         this.udp_totalSizeOfTransferredData.setText(String.format("%.3f", totalSizeOfTransferredData / 1024));
         this.udp_totalTransmissionTime.setText(String.format("%.1f", totalTransmissionTime / 1000));
-        this.udp_transmissionSpeed.setText(String.format("%.4f", transmissionSpeed / 1024));
+        this.udp_transmissionSpeed.setText(String.format("%.3f", transmissionSpeed / 1024));
     }
 }

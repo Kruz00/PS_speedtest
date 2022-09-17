@@ -2,6 +2,7 @@ package com.example.server;
 
 import javafx.application.Platform;
 
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -25,6 +26,22 @@ public class UDPThread extends Thread {
     private long recvDataSize;
     private double transmissionSpeed;
 
+    public long getTransmissionTime() {
+        return transmissionTime;
+    }
+
+    public int getRecvBufferSize() {
+        return recvBufferSize;
+    }
+
+    public long getRecvDataSize() {
+        return recvDataSize;
+    }
+
+    public double getTransmissionSpeed() {
+        return transmissionSpeed;
+    }
+
     private DatagramSocket serverSocket;
 
 
@@ -44,9 +61,9 @@ public class UDPThread extends Thread {
         this.transmissionTime = this.currentTime - this.startTime;
         this.recvDataSize += this.recvBufferSize;
         this.transmissionSpeed = (double) this.recvDataSize * 1000.0D / (double) (this.transmissionTime);
-        Platform.runLater(() -> speedtestServerController.updateUDPstats(this.recvBufferSize, this.recvDataSize, this.transmissionTime, this.transmissionSpeed));
+//        Platform.runLater(() -> speedtestServerController.updateUDPstats(this.recvBufferSize, this.recvDataSize, this.transmissionTime, this.transmissionSpeed));
 
-        System.out.println(this.getClass().getName() + ": recvDataSize=" + this.recvDataSize + "; transmissionSpeed=" + this.transmissionSpeed);
+//        System.out.println(this.getClass().getName() + ": recvDataSize=" + this.recvDataSize + "; transmissionSpeed=" + this.transmissionSpeed);
     }
 
     private void resetStats() {
@@ -62,47 +79,49 @@ public class UDPThread extends Thread {
         try {
             byte[] sizeMsg = new byte[12]; // in real max its 10, but for sure
             byte[] messageBuf;
-            DatagramPacket pack;
+            DatagramPacket packet;
 
-            System.out.println("Starting UDP listening");
+            System.out.println("UDP Starting listening");
             this.serverSocket = new DatagramSocket(this.port);
             this.isListening = true;
 
             while (!this.isClosed.get()) {
-                this.resetStats();
-                pack = new DatagramPacket(sizeMsg, sizeMsg.length);
+                packet = new DatagramPacket(sizeMsg, sizeMsg.length);
 
                 while (!this.isClosed.get()) {
-                    this.serverSocket.receive(pack);
-                    String[] firstMsg = (new String(pack.getData(), pack.getOffset(), pack.getLength())).split(":");
+                    System.out.println("UDP wait for first message");
+                    this.serverSocket.receive(packet);
+                    String[] firstMsg = (new String(packet.getData(), packet.getOffset(), packet.getLength())).split(":");
                     if (firstMsg[0].equalsIgnoreCase("SIZE")) {
+                        System.out.println("UDP message: " + firstMsg[0] + firstMsg[1]);
                         this.resetStats();
                         this.recvBufferSize = Integer.parseInt(firstMsg[1]);
                         isSpeedtestRunning = true;
-                        System.out.println("Starting UDP test");
+                        System.out.println("UDP Starting test");
                         this.startTime = System.currentTimeMillis();
                         break;
                     }
                 }
-
-                messageBuf = new byte[this.recvBufferSize];
-                pack = new DatagramPacket(messageBuf, messageBuf.length);
+                int bufSize = Math.max(this.recvBufferSize, 5);
+                messageBuf = new byte[bufSize];
+                packet = new DatagramPacket(messageBuf, messageBuf.length);
                 String message;
                 while (isSpeedtestRunning && !this.isClosed.get()) {
-                    this.serverSocket.receive(pack);
-                    message = new String(pack.getData(), pack.getOffset(), pack.getLength());
+                    this.serverSocket.receive(packet);
+                    message = new String(packet.getData(), packet.getOffset(), packet.getLength());
                     if (message.equalsIgnoreCase("FINE")) {
                         isSpeedtestRunning = false;
-                        System.out.println("End UDP test");
+                        System.out.println("UDP End test");
                         break;
                     }
-                    executor.execute(this::calculateAndUpdateStats);
+//                    executor.execute(this::calculateAndUpdateStats);
+                    calculateAndUpdateStats();
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            System.out.println("Close UDP thread");
+            System.out.println("UDP Close thread");
             this.isListening = false;
         }
     }

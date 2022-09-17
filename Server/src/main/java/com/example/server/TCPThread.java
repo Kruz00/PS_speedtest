@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
@@ -27,6 +29,22 @@ public class TCPThread extends Thread {
     private long recvDataSize;
     private double transmissionSpeed;
 
+    public long getTransmissionTime() {
+        return transmissionTime;
+    }
+
+    public int getRecvBufferSize() {
+        return recvBufferSize;
+    }
+
+    public long getRecvDataSize() {
+        return recvDataSize;
+    }
+
+    public double getTransmissionSpeed() {
+        return transmissionSpeed;
+    }
+
     private ServerSocket serverSocket;
     private Socket clientSocket;
     private final Semaphore sem;
@@ -41,6 +59,7 @@ public class TCPThread extends Thread {
     }
 
     public void close() {
+        acceptingExecutor.shutdown();
         this.isClosed.set(true);
 
         try {
@@ -55,7 +74,7 @@ public class TCPThread extends Thread {
         this.transmissionTime = this.currentTime - this.startTime;
         this.recvDataSize += this.recvBufferSize;
         this.transmissionSpeed = (double) this.recvDataSize * 1000.0D / (double) (this.transmissionTime);
-        Platform.runLater(() -> speedtestServerController.updateTCPstats(this.recvBufferSize, this.recvDataSize, this.transmissionTime, this.transmissionSpeed));
+//        Platform.runLater(() -> speedtestServerController.updateTCPstats(this.recvBufferSize, this.recvDataSize, this.transmissionTime, this.transmissionSpeed));
 
         System.out.println(this.getClass().getName() + ": recvDataSize=" + this.recvDataSize + "; transmissionSpeed=" + this.transmissionSpeed);
     }
@@ -75,7 +94,8 @@ public class TCPThread extends Thread {
                 Socket accepted = serverSocket.accept();
                 if (clientSocket == null || clientSocket.isClosed()) {
                     clientSocket = accepted;
-                    resetStats();
+                    System.out.println("TCP new client");
+//                    resetStats();
                     this.sem.release();
                 } else {
                     accepted.close();
@@ -85,7 +105,7 @@ public class TCPThread extends Thread {
             this.sem.release();
             e.printStackTrace();
         } catch (IOException e) {
-            System.out.println("Error on new client");
+            System.out.println("TCP Error on new client");
             e.printStackTrace();
         }
     }
@@ -103,18 +123,22 @@ public class TCPThread extends Thread {
 
             while (!this.isClosed.get()) {
                 this.sem.acquire();
-                DataInputStream in;
+                System.out.println("TCP starting");
+                DataInputStream inputStream;
                 try {
-                    in = new DataInputStream(this.clientSocket.getInputStream());
+                    inputStream = new DataInputStream(this.clientSocket.getInputStream());
                 } catch (NullPointerException e) {
                     continue;
                 }
-                int bytesRead = in.read(sizeMsg);
+                int bytesRead = inputStream.read(sizeMsg);
                 if (bytesRead >= 0) {
-                    String[] firstMsg = (new String(sizeMsg, 0, bytesRead)).split(":");
-                    this.recvBufferSize = Integer.parseInt(firstMsg[1]);
-                    System.out.println("Starting TCP test");
-                    this.startTime = System.currentTimeMillis();
+                    String[] firstMsg = (new String(sizeMsg, 0, bytesRead, StandardCharsets.UTF_8)).split(":");
+                    if (firstMsg[0].equalsIgnoreCase("SIZE")) {
+                        resetStats();
+                        this.recvBufferSize = Integer.parseInt(firstMsg[1]);
+                        System.out.println("TCP Starting test: " + firstMsg[1]);
+                        this.startTime = System.currentTimeMillis();
+                    }
                 } else {
                     this.clientSocket.close();
                     continue;
@@ -122,22 +146,23 @@ public class TCPThread extends Thread {
                 messageBuf = new byte[recvBufferSize];
 
                 while (!this.isClosed.get()) { // till server ends
-                    bytesRead = in.read(messageBuf);
+                    bytesRead = inputStream.read(messageBuf);
+                    System.out.println("TCP get msg: " + Arrays.toString(messageBuf));
                     if (bytesRead >= 0) { // till client ends connection
-                        executor.execute(this::calculateAndUpdateStats);
+//                        executor.execute(this::calculateAndUpdateStats);
+                        calculateAndUpdateStats();
                     } else {
                         this.clientSocket.close();
                         break;
                     }
                 }
-                System.out.println("End UDP test");
-                acceptingExecutor.shutdown();
+                System.out.println("TCP End test");
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         } finally {
             this.isListening = false;
         }
-        System.out.println("Close TCP thread");
+        System.out.println("TCP Close thread");
     }
 }

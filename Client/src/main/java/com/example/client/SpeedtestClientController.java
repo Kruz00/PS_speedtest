@@ -30,23 +30,31 @@ public class SpeedtestClientController {
     private boolean nagleAlgorithm = false;
     private boolean isRunning = false;
 
-    private final BooleanProperty hasTCPConnected = new SimpleBooleanProperty(false);
-    private final BooleanProperty hasUDPConnected = new SimpleBooleanProperty(false);
+    private final BooleanProperty isTCPConnected = new SimpleBooleanProperty(false);
+    private final BooleanProperty isUDPConnected = new SimpleBooleanProperty(false);
+
+    private TCPThread tcpThread;
+    private UDPThread udpThread;
 
     @FXML
     public void initialize() {
+        this.ipAddressField.setText("127.0.0.1"); // localhost
+//        this.ipAddressField.setText("127.0.0.1"); // dell
+
         this.packetSizeSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
             this.bytesLabel.setText("Bytes: " + newValue.intValue());
         });
 
-        this.hasTCPConnected.addListener((observable, oldValue, newValue) -> {
+        this.isTCPConnected.addListener((observable, oldValue, newValue) -> {
+            System.out.println("tcp newvalue " + newValue);
             if (newValue) {
                 this.tcpLabel.setText("TCP Thread: connected");
             } else  {
                 this.tcpLabel.setText("TCP Thread: error");
             }
         });
-        this.hasUDPConnected.addListener((observable, oldValue, newValue) -> {
+        this.isUDPConnected.addListener((observable, oldValue, newValue) -> {
+            System.out.println("udp newvalue " + newValue);
             if (newValue) {
                 this.udpLabel.setText("UDP Thread: connected");
             } else {
@@ -57,21 +65,27 @@ public class SpeedtestClientController {
     }
 
     public void onNagleAlgorithmCheckbox(ActionEvent actionEvent) {
-        this.nagleAlgorithm = !this.nagleAlgorithm;
+        this.nagleAlgorithm = this.nagleCheckBox.isSelected();
     }
 
     public void onStartStop() {
         this.isRunning = !this.isRunning;
-        this.refreshWindow();
-    }
 
-    private void refreshWindow() {
         String tcpLabel, udpLabel, buttonText;
+        this.nagleAlgorithm = this.nagleCheckBox.isSelected();
+
         if (this.isRunning) {
             tcpLabel = "TCP Thread: starting";
             udpLabel = "UDP Thread: starting";
             buttonText = "Stop transmission";
 
+            tcpThread = new TCPThread(this.ipAddressField.getText(), Integer.parseInt(this.portField.getText()),
+                    this.nagleAlgorithm, (int) this.packetSizeSlider.getValue(), isTCPConnected);
+            udpThread = new UDPThread(this.ipAddressField.getText(), Integer.parseInt(this.portField.getText()),
+                    (int) this.packetSizeSlider.getValue(), isUDPConnected);
+
+            tcpThread.start();
+            udpThread.start();
 
             this.serverAddressLabel.setText(ipAddressField.getText() + ":" + portField.getText());
         } else {
@@ -79,20 +93,9 @@ public class SpeedtestClientController {
             udpLabel = "UDP Thread: stopped";
             buttonText = "Start transmission";
 
-//            if (BenchmarkApplication.tcpSender != null) {
-//                BenchmarkApplication.tcpSender.shutdown();
-//                try {
-//                    BenchmarkApplication.tcpSender.join();
-//                } catch (InterruptedException ignored) {
-//                }
-//            }
-//            if (BenchmarkApplication.udpSender != null) {
-//                BenchmarkApplication.udpSender.shutdown();
-//                try {
-//                    BenchmarkApplication.udpSender.join();
-//                } catch (InterruptedException ignored) {
-//                }
-//            }
+            tcpThread.close();
+            udpThread.close();
+
             this.serverAddressLabel.setText("None");
         }
 

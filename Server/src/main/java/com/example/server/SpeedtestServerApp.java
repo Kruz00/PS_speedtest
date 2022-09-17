@@ -11,8 +11,8 @@ public class SpeedtestServerApp extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(SpeedtestServerApp.class.getResource("server-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 320, 240);
-        stage.setTitle("Hello!");
+        Scene scene = new Scene(fxmlLoader.load(), 550, 320);
+        stage.setTitle("server - TCP_UDP_Speedtest");
         stage.setScene(scene);
         stage.show();
     }
