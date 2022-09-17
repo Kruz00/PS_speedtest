@@ -38,8 +38,8 @@ public class SpeedtestClientController {
 
     @FXML
     public void initialize() {
-        this.ipAddressField.setText("127.0.0.1"); // localhost
-//        this.ipAddressField.setText("127.0.0.1"); // dell
+//        this.ipAddressField.setText("127.0.0.1"); // localhost
+        this.ipAddressField.setText("10.11.215.129"); // dell
 
         this.packetSizeSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
             this.bytesLabel.setText("Bytes: " + newValue.intValue());

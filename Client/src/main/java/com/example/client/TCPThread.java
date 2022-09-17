@@ -60,7 +60,7 @@ public class TCPThread extends Thread {
                     e.printStackTrace();
                     close();
                 }
-            }, 0, 1, TimeUnit.MILLISECONDS);
+            }, 0, 1, TimeUnit.MICROSECONDS);
 //            scheduledFuture.get();
         } catch (IOException e) {
             e.printStackTrace();

@@ -74,7 +74,7 @@ public class UDPThread extends Thread {
                     e.printStackTrace();
                     errorClose();
                 }
-            }, 0, 1, TimeUnit.MILLISECONDS);
+            }, 0, 1, TimeUnit.MICROSECONDS);
         } catch (IOException e) {
             e.printStackTrace();
             Platform.runLater(() -> this.isTCPConnected.setValue(false));
