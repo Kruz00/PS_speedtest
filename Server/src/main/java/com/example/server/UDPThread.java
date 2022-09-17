@@ -1,8 +1,5 @@
 package com.example.server;
 
-import javafx.application.Platform;
-
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -12,10 +9,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class UDPThread extends Thread {
     private final int port;
-    private final SpeedtestServerController speedtestServerController;
-    private final ExecutorService executor;
+//    private final ExecutorService executor;
 
-    private boolean isListening = false;
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
     private boolean isSpeedtestRunning = false; // set to true after receive first message, set to false after receive stop message
 
@@ -45,10 +40,9 @@ public class UDPThread extends Thread {
     private DatagramSocket serverSocket;
 
 
-    public UDPThread(int port, SpeedtestServerController speedtestServerController) {
+    public UDPThread(int port) {
         this.port = port;
-        this.speedtestServerController = speedtestServerController;
-        executor = Executors.newSingleThreadExecutor();
+//        executor = Executors.newSingleThreadExecutor();
     }
 
     public void close() {
@@ -61,9 +55,6 @@ public class UDPThread extends Thread {
         this.transmissionTime = this.currentTime - this.startTime;
         this.recvDataSize += this.recvBufferSize;
         this.transmissionSpeed = (double) this.recvDataSize * 1000.0D / (double) (this.transmissionTime);
-//        Platform.runLater(() -> speedtestServerController.updateUDPstats(this.recvBufferSize, this.recvDataSize, this.transmissionTime, this.transmissionSpeed));
-
-//        System.out.println(this.getClass().getName() + ": recvDataSize=" + this.recvDataSize + "; transmissionSpeed=" + this.transmissionSpeed);
     }
 
     private void resetStats() {
@@ -83,7 +74,6 @@ public class UDPThread extends Thread {
 
             System.out.println("UDP Starting listening");
             this.serverSocket = new DatagramSocket(this.port);
-            this.isListening = true;
 
             while (!this.isClosed.get()) {
                 packet = new DatagramPacket(sizeMsg, sizeMsg.length);
@@ -122,7 +112,6 @@ public class UDPThread extends Thread {
             e.printStackTrace();
         } finally {
             System.out.println("UDP Close thread");
-            this.isListening = false;
         }
     }
 }

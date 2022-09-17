@@ -16,11 +16,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TCPThread extends Thread {
     private final int port;
-    private final SpeedtestServerController speedtestServerController;
     private final ExecutorService acceptingExecutor;
-    private final ExecutorService executor;
+//    private final ExecutorService executor;
 
-    private boolean isListening = false;
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
     private long startTime;
     private long currentTime;
@@ -50,11 +48,10 @@ public class TCPThread extends Thread {
     private final Semaphore sem;
 
 
-    public TCPThread(int port, SpeedtestServerController speedtestServerController) {
+    public TCPThread(int port) {
         this.port = port;
-        this.speedtestServerController = speedtestServerController;
         acceptingExecutor = Executors.newSingleThreadExecutor();
-        executor = Executors.newSingleThreadExecutor();
+//        executor = Executors.newSingleThreadExecutor();
         this.sem = new Semaphore(0);
     }
 
@@ -74,9 +71,6 @@ public class TCPThread extends Thread {
         this.transmissionTime = this.currentTime - this.startTime;
         this.recvDataSize += this.recvBufferSize;
         this.transmissionSpeed = (double) this.recvDataSize * 1000.0D / (double) (this.transmissionTime);
-//        Platform.runLater(() -> speedtestServerController.updateTCPstats(this.recvBufferSize, this.recvDataSize, this.transmissionTime, this.transmissionSpeed));
-
-        System.out.println(this.getClass().getName() + ": recvDataSize=" + this.recvDataSize + "; transmissionSpeed=" + this.transmissionSpeed);
     }
 
     private void resetStats() {
@@ -113,7 +107,6 @@ public class TCPThread extends Thread {
     public void run() {
         try {
             this.serverSocket = new ServerSocket(this.port, 1); // minimum number
-            this.isListening = true;
 
             System.out.println("Starting TCP listening");
             acceptingExecutor.submit(this::acceptingConnection);
@@ -147,7 +140,6 @@ public class TCPThread extends Thread {
 
                 while (!this.isClosed.get()) { // till server ends
                     bytesRead = inputStream.read(messageBuf);
-                    System.out.println("TCP get msg: " + Arrays.toString(messageBuf));
                     if (bytesRead >= 0) { // till client ends connection
 //                        executor.execute(this::calculateAndUpdateStats);
                         calculateAndUpdateStats();
@@ -160,8 +152,6 @@ public class TCPThread extends Thread {
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
-        } finally {
-            this.isListening = false;
         }
         System.out.println("TCP Close thread");
     }

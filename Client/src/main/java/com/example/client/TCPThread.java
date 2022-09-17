@@ -8,9 +8,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class TCPThread extends Thread {
     private final String ipAddress;
@@ -55,14 +53,15 @@ public class TCPThread extends Thread {
             byte[] testMsg = new byte[this.bufferSize];
             new Random().nextBytes(testMsg);
 
-            executor.scheduleWithFixedDelay(() -> {
+            ScheduledFuture<?> scheduledFuture = executor.scheduleWithFixedDelay(() -> {
                 try {
-                    outputStream.write(testMsg, 1, testMsg.length);
+                    outputStream.write(testMsg, 0, testMsg.length);
                 } catch (IOException e) {
                     e.printStackTrace();
                     close();
                 }
             }, 0, 1, TimeUnit.MILLISECONDS);
+//            scheduledFuture.get();
         } catch (IOException e) {
             e.printStackTrace();
             Platform.runLater(() -> this.isTCPConnected.setValue(false));

@@ -90,8 +90,8 @@ public class SpeedtestServerController {
 
             this.portField.setText("" + port);
 
-            this.tcpThread = new TCPThread(port, this);
-            this.udpThread = new UDPThread(port, this);
+            this.tcpThread = new TCPThread(port);
+            this.udpThread = new UDPThread(port);
 
             this.tcpThread.start();
             this.udpThread.start();
