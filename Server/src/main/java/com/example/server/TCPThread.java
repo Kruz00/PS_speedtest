@@ -6,8 +6,10 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TCPThread extends Thread {
@@ -27,6 +29,7 @@ public class TCPThread extends Thread {
 
     private ServerSocket serverSocket;
     private Socket clientSocket;
+    private final Semaphore sem;
 
 
     public TCPThread(int port, SpeedtestServerController speedtestServerController) {
@@ -34,7 +37,7 @@ public class TCPThread extends Thread {
         this.speedtestServerController = speedtestServerController;
         acceptingExecutor = Executors.newSingleThreadExecutor();
         executor = Executors.newSingleThreadExecutor();
-
+        this.sem = new Semaphore(0);
     }
 
     public void close() {
@@ -73,11 +76,14 @@ public class TCPThread extends Thread {
                 if (clientSocket == null || clientSocket.isClosed()) {
                     clientSocket = accepted;
                     resetStats();
-                    this.notify();
+                    this.sem.release();
                 } else {
                     accepted.close();
                 }
             }
+        } catch (SocketException e) {
+            this.sem.release();
+            e.printStackTrace();
         } catch (IOException e) {
             System.out.println("Error on new client");
             e.printStackTrace();
@@ -96,8 +102,13 @@ public class TCPThread extends Thread {
             byte[] messageBuf;
 
             while (!this.isClosed.get()) {
-                this.wait();
-                DataInputStream in = new DataInputStream(this.clientSocket.getInputStream());
+                this.sem.acquire();
+                DataInputStream in;
+                try {
+                    in = new DataInputStream(this.clientSocket.getInputStream());
+                } catch (NullPointerException e) {
+                    continue;
+                }
                 int bytesRead = in.read(sizeMsg);
                 if (bytesRead >= 0) {
                     String[] firstMsg = (new String(sizeMsg, 0, bytesRead)).split(":");
@@ -125,8 +136,8 @@ public class TCPThread extends Thread {
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         } finally {
-            System.out.println("Close TCP thread");
             this.isListening = false;
         }
+        System.out.println("Close TCP thread");
     }
 }
